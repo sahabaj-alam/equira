@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Free refinance break-even and PMI drop-off calculator. See exactly when a refi pays for itself and when you can stop paying PMI. Runs entirely in your browser — no signup, no data leaves your device." />
+<title>Equira — Refinance break-even and PMI removal calculator (U.S.)</title>
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Equira — Refinance break-even &amp; PMI removal calculator" />
+<meta property="og:description" content="See exactly when a refinance pays for itself and when you can stop paying PMI. Free, runs in your browser, no signup." />
+<!-- After deploy: set og:url to your live URL, and drop a 1200x630 screenshot named og-preview.png in this folder. -->
+<meta property="og:image" content="og-preview.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Equira — Refinance break-even &amp; PMI removal calculator" />
+<meta name="twitter:description" content="When does your refi pay off, and when can you drop PMI? Free U.S. calculator, no signup." />
+<meta name="twitter:image" content="og-preview.png" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234ea3ff'/><text x='50' y='71' font-family='Arial,sans-serif' font-size='62' font-weight='700' text-anchor='middle' fill='white'>E</text></svg>" />
+<style>
+  :root{
+    --bg:#0b0d14; --bg-2:#0e1119; --panel:#141824; --panel-2:#1a1f2e; --raised:#212636;
+    --stroke:#262c3f; --stroke-2:#333b54;
+    --txt:#e7eaf3; --txt-dim:#9aa3bd; --txt-faint:#626b86;
+    --accent:#4ea3ff; --accent-2:#7c6cff; --grad:linear-gradient(135deg,#4ea3ff,#7c6cff);
+    --good:#3ddc97; --good-dim:#1c7a58; --warn:#ffb454; --bad:#ff6b6b;
+    --r:14px; --r-sm:10px;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono","JetBrains Mono","Fira Code",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans); color:var(--txt); line-height:1.55; -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(1100px 600px at 82% -8%, #16203a 0%, transparent 55%),
+      radial-gradient(900px 600px at -8% 108%, #1a1630 0%, transparent 52%),
+      var(--bg);
+    min-height:100vh;
+  }
+  a{color:var(--accent)}
+  .wrap{max-width:1080px; margin:0 auto; padding:32px 20px 64px}
+
+  header.hero{margin-bottom:28px}
+  .brand{display:flex; align-items:center; gap:11px; margin-bottom:18px}
+  .brand .mark{width:34px; height:34px; border-radius:10px; background:var(--grad);
+    display:grid; place-items:center; font-weight:800; font-size:18px; color:#fff;
+    box-shadow:0 8px 22px rgba(78,163,255,.35)}
+  .brand b{font-size:18px; letter-spacing:-.3px}
+  .brand span{color:var(--txt-faint); font-size:11px; display:block; margin-top:-2px}
+  .scope{display:inline-flex; align-items:center; gap:7px; margin-bottom:14px; padding:5px 12px; border-radius:999px;
+    background:rgba(78,163,255,.12); border:1px solid rgba(78,163,255,.3); color:var(--accent);
+    font-size:12px; font-weight:600; letter-spacing:.2px}
+  h1{font-size:clamp(26px,4vw,40px); letter-spacing:-.02em; line-height:1.08; margin-bottom:10px}
+  h1 .g{background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .lead{color:var(--txt-dim); font-size:16px; max-width:640px}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:26px}
+  @media(max-width:860px){ .grid{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg-2)); border:1px solid var(--stroke);
+    border-radius:var(--r); padding:22px; box-shadow:0 14px 40px rgba(0,0,0,.35)}
+  .card h2{font-size:17px; display:flex; align-items:center; gap:9px; margin-bottom:4px}
+  .card h2 .ic{width:24px; height:24px; border-radius:7px; display:grid; place-items:center; font-size:13px;
+    background:rgba(78,163,255,.14); color:var(--accent)}
+  .card .sub{color:var(--txt-faint); font-size:12.5px; margin-bottom:18px}
+
+  .field{margin-bottom:13px}
+  .field label{display:flex; justify-content:space-between; font-size:12.5px; color:var(--txt-dim); margin-bottom:5px}
+  .field label .hint{color:var(--txt-faint)}
+  .inp{position:relative}
+  .inp .pre,.inp .suf{position:absolute; top:50%; transform:translateY(-50%); color:var(--txt-faint); font-size:14px; pointer-events:none}
+  .inp .pre{left:12px} .inp .suf{right:12px}
+  input[type=number]{width:100%; background:var(--bg); border:1px solid var(--stroke-2); color:var(--txt);
+    border-radius:var(--r-sm); padding:11px 12px; font:inherit; font-variant-numeric:tabular-nums;
+    transition:border-color .15s, box-shadow .15s}
+  input.pad-l{padding-left:26px} input.pad-r{padding-right:34px}
+  input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(78,163,255,.15)}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:11px}
+
+  .result{margin-top:18px; border-top:1px solid var(--stroke); padding-top:16px}
+  .headline{font-size:15px; line-height:1.5}
+  .headline b{color:var(--txt)}
+  .big{font-family:var(--mono); font-size:30px; font-weight:600; letter-spacing:-.5px; margin:6px 0 2px}
+  .big.good{color:var(--good)} .big.warn{color:var(--warn)} .big.bad{color:var(--bad)}
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px}
+  .stat{background:var(--panel-2); border:1px solid var(--stroke); border-radius:var(--r-sm); padding:11px 13px}
+  .stat .k{font-size:11px; color:var(--txt-faint); text-transform:uppercase; letter-spacing:.5px}
+  .stat .v{font-family:var(--mono); font-size:17px; margin-top:3px; font-variant-numeric:tabular-nums}
+  .note{font-size:12px; color:var(--txt-faint); margin-top:12px; line-height:1.5}
+  .note b{color:var(--txt-dim)}
+
+  svg.chart{width:100%; height:150px; margin-top:16px; display:block}
+
+  .cta{margin-top:16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+  .btn{border:0; cursor:pointer; font:inherit; font-weight:600; font-size:14px; padding:11px 18px; border-radius:var(--r-sm);
+    background:var(--grad); color:#fff; box-shadow:0 8px 20px rgba(124,108,255,.28); text-decoration:none; display:inline-block}
+  .btn.ghost{background:transparent; border:1px solid var(--stroke-2); color:var(--txt-dim); box-shadow:none}
+  .cta small{color:var(--txt-faint); font-size:11.5px}
+
+  .disclaimer{margin-top:28px; background:rgba(255,180,84,.06); border:1px solid rgba(255,180,84,.28);
+    border-radius:var(--r); padding:14px 16px; font-size:12.5px; color:var(--txt-dim); line-height:1.6}
+  .disclaimer b{color:var(--warn)}
+
+  .method{margin-top:22px; background:var(--panel); border:1px solid var(--stroke); border-radius:var(--r); padding:2px 18px}
+  .method summary{cursor:pointer; padding:14px 0; font-weight:600; font-size:14px; list-style:none; display:flex; align-items:center; gap:9px; color:var(--txt)}
+  .method summary::-webkit-details-marker{display:none}
+  .method summary::before{content:"\203A"; color:var(--accent); font-size:18px; line-height:1; transition:transform .15s}
+  .method[open] summary::before{transform:rotate(90deg)}
+  .method .body{padding:0 2px 16px; color:var(--txt-dim); font-size:13px; line-height:1.7}
+  .method .body p{margin-bottom:10px}
+  .method .body p:last-child{margin-bottom:0}
+  .method code{font-family:var(--mono); background:var(--bg); border:1px solid var(--stroke-2); border-radius:5px; padding:1px 6px; color:var(--txt); font-size:12.5px}
+  .method .body b{color:var(--txt)}
+  footer{margin-top:28px; color:var(--txt-faint); font-size:12px; text-align:center; line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="brand">
+      <div class="mark">E</div>
+      <div><b>Equira</b><span>refinance break-even &amp; PMI drop-off</span></div>
+    </div>
+    <div class="scope">🇺🇸 Built for U.S. mortgages</div>
+    <h1>Should you refinance — and when can you <span class="g">stop paying PMI</span>?</h1>
+    <p class="lead">Two honest numbers most lenders won't hand you: the month your refinance actually pays for itself, and the exact date your PMI can come off. Everything runs in your browser — no signup, nothing leaves your device.</p>
+  </header>
+
+  <div class="grid">
+    <!-- ============ REFI BREAK-EVEN ============ -->
+    <section class="card">
+      <h2><span class="ic">↻</span> Refinance break-even</h2>
+      <div class="sub">When does a new rate earn back its closing costs?</div>
+
+      <div class="field">
+        <label>Current loan balance <span class="hint">what you still owe</span></label>
+        <div class="inp"><span class="pre">$</span><input id="r_bal" class="pad-l" type="number" value="320000" min="0" step="1000"></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Current rate</label>
+          <div class="inp"><input id="r_rate1" class="pad-r" type="number" value="6.75" min="0" step="0.01"><span class="suf">%</span></div>
+        </div>
+        <div class="field">
+          <label>Years left</label>
+          <div class="inp"><input id="r_yrs1" type="number" value="27" min="1" step="1"></div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>New rate</label>
+          <div class="inp"><input id="r_rate2" class="pad-r" type="number" value="5.75" min="0" step="0.01"><span class="suf">%</span></div>
+        </div>
+        <div class="field">
+          <label>New term</label>
+          <div class="inp"><input id="r_yrs2" type="number" value="30" min="1" step="1"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Closing costs <span class="hint">lender + title + escrow fees</span></label>
+        <div class="inp"><span class="pre">$</span><input id="r_cost" class="pad-l" type="number" value="5000" min="0" step="100"></div>
+      </div>
+
+      <div class="result" id="r_out"></div>
+
+      <div class="cta">
+        <!-- LEAD-GEN HOOK: replace href with a mortgage/refi affiliate or marketplace link once live -->
+        <a class="btn" id="r_cta" href="#" onclick="return false;">Compare refinance offers →</a>
+        <small>lender marketplace — coming soon</small>
+      </div>
+    </section>
+
+    <!-- ============ PMI DROP-OFF ============ -->
+    <section class="card">
+      <h2><span class="ic">✕</span> PMI drop-off date</h2>
+      <div class="sub">When can you legally stop paying mortgage insurance? <b style="color:var(--warn)">U.S. only.</b></div>
+
+      <div class="field">
+        <label>Original home value <span class="hint">purchase price</span></label>
+        <div class="inp"><span class="pre">$</span><input id="p_val" class="pad-l" type="number" value="400000" min="0" step="1000"></div>
+      </div>
+      <div class="field">
+        <label>Current loan balance</label>
+        <div class="inp"><span class="pre">$</span><input id="p_bal" class="pad-l" type="number" value="360000" min="0" step="1000"></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Loan rate</label>
+          <div class="inp"><input id="p_rate" class="pad-r" type="number" value="6.75" min="0" step="0.01"><span class="suf">%</span></div>
+        </div>
+        <div class="field">
+          <label>Years left</label>
+          <div class="inp"><input id="p_yrs" type="number" value="28" min="1" step="1"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Extra principal / month <span class="hint">optional — speeds it up</span></label>
+        <div class="inp"><span class="pre">$</span><input id="p_extra" class="pad-l" type="number" value="0" min="0" step="25"></div>
+      </div>
+
+      <div class="result" id="p_out"></div>
+      <svg class="chart" id="p_chart" viewBox="0 0 600 150" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </section>
+  </div>
+
+  <details class="method">
+    <summary>How these numbers are calculated</summary>
+    <div class="body">
+      <p><b>Monthly payment (principal + interest):</b> <code>M = P × i / (1 − (1 + i)^-n)</code>, where <code>P</code> = loan balance, <code>i</code> = annual rate ÷ 12, and <code>n</code> = number of monthly payments. (A 0% rate simplifies to <code>P / n</code>.)</p>
+      <p><b>Refinance break-even:</b> monthly saving = current payment − new payment; break-even = <code>closing costs / monthly saving</code>, rounded up to whole months. The lifetime figure compares total scheduled payments — the current loan's remaining payments vs. the new loan plus closing costs — held to term and not discounted for the time value of money.</p>
+      <p><b>PMI drop-off:</b> your balance is amortized forward month by month. Under the U.S. <b>Homeowners Protection Act</b>, you can <b>request</b> cancellation at <b>80%</b> loan-to-value and it <b>auto-terminates</b> at <b>78%</b>, measured against the <b>original</b> property value and the loan's amortization schedule.</p>
+      <p>All figures are principal + interest only (no taxes, insurance, or HOA) and are estimates — verify with your lender before acting.</p>
+    </div>
+  </details>
+
+  <div class="disclaimer">
+    <b>Estimates only — not financial advice.</b> Figures are calculated from the numbers you enter using standard amortization math.
+    PMI rules shown follow the U.S. <b>Homeowners Protection Act</b> for most conventional loans: you can <em>request</em> cancellation at 80% loan-to-value and it <em>auto-terminates</em> at 78%, based on the original property value and the loan's amortization schedule. FHA/other loans, lender overlays, and appraisals can change this. Payments here are principal + interest only (no taxes, insurance, or HOA). Verify anything important with your lender before acting.
+  </div>
+
+  <footer>
+    Built as a client-side tool — <b>your numbers never leave this page.</b><br>
+    Equira · v0.1 · <span id="yr"></span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var num = function(id){ var v = parseFloat($(id).value); return isFinite(v) ? v : 0; };
+  var fmt$ = function(n){ return "$" + Math.round(n).toLocaleString("en-US"); };
+  var fmt$2 = function(n){ return "$" + n.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:0}); };
+  var ym = function(m){
+    if(m==null) return "—";
+    var y = Math.floor(m/12), mo = m%12;
+    if(y<=0) return mo + " mo";
+    if(mo===0) return y + " yr";
+    return y + " yr " + mo + " mo";
+  };
+
+  // Monthly principal+interest payment
+  function pmt(P, annualPct, nMonths){
+    if(nMonths<=0 || P<=0) return 0;
+    var i = (annualPct/100)/12;
+    if(i===0) return P/nMonths;
+    return P * i / (1 - Math.pow(1+i, -nMonths));
+  }
+
+  // ---------- Refinance break-even ----------
+  function calcRefi(){
+    var B = num("r_bal"), r1 = num("r_rate1"), n1 = num("r_yrs1")*12,
+        r2 = num("r_rate2"), n2 = num("r_yrs2")*12, C = num("r_cost");
+    var out = $("r_out");
+    if(B<=0 || n1<=0 || n2<=0){ out.innerHTML = '<p class="note">Enter your balance, current terms, and the new offer to see the break-even.</p>'; return; }
+
+    var oldM = pmt(B, r1, n1), newM = pmt(B, r2, n2);
+    var savings = oldM - newM;
+    var totalOld = oldM * n1;                 // remaining cash on current loan
+    var totalNew = newM * n2 + C;             // cash on new loan + upfront costs
+    var lifeDelta = totalNew - totalOld;      // + means new loan costs more overall
+
+    var html = "";
+    if(savings <= 0){
+      html += '<p class="headline"><b>This refinance raises your monthly payment.</b></p>';
+      html += '<div class="big bad">'+fmt$(Math.abs(savings))+'/mo more</div>';
+      html += '<p class="note">The new rate/term doesn\'t lower your payment, so there\'s no break-even. Lower the new rate or shorten the term to compare a saving scenario.</p>';
+    } else {
+      var be = Math.ceil(C / savings);
+      var cls = be <= 36 ? "good" : (be <= 60 ? "warn" : "bad");
+      html += '<p class="headline">You break even in</p>';
+      html += '<div class="big '+cls+'">'+ym(be)+'</div>';
+      html += '<p class="note">Save <b>'+fmt$(savings)+'/mo</b>; it takes <b>'+be+' payments</b> to earn back '+fmt$(C)+' in closing costs. Stay past that point and the refi is ahead.</p>';
+      html += '<div class="stats">';
+      html += '<div class="stat"><div class="k">New payment</div><div class="v">'+fmt$(newM)+'</div></div>';
+      html += '<div class="stat"><div class="k">Monthly saving</div><div class="v" style="color:var(--good)">'+fmt$(savings)+'</div></div>';
+      html += '</div>';
+      if(lifeDelta > 0){
+        html += '<p class="note">⚠ <b>Longer-term catch:</b> even with a lower payment, stretching the term means you\'d pay about <b>'+fmt$(lifeDelta)+' more</b> over the life of the loan. Lower payment now, more interest later — that trade-off is yours to make.</p>';
+      } else {
+        html += '<p class="note">✓ Over the full loan you\'d also pay about <b>'+fmt$(Math.abs(lifeDelta))+' less</b> in total — a clean win.</p>';
+      }
+    }
+    out.innerHTML = html;
+  }
+
+  // ---------- PMI drop-off ----------
+  function calcPMI(){
+    var V = num("p_val"), B = num("p_bal"), r = num("p_rate"),
+        n = num("p_yrs")*12, extra = num("p_extra");
+    var out = $("p_out");
+    if(V<=0 || B<=0 || n<=0){ out.innerHTML = '<p class="note">Enter your original value, balance, and terms to find your PMI drop-off date.</p>'; drawChart([],V,0); return; }
+
+    var i = (r/100)/12;
+    var M = pmt(B, r, n) + extra;
+    var bal = B, pts = [{m:0, bal:bal}];
+    var m80 = null, m78 = null;
+    var curLtv = B / V;
+
+    // already there?
+    if(bal <= 0.80*V) m80 = 0;
+    if(bal <= 0.78*V) m78 = 0;
+
+    for(var m=1; m<=n+1200 && bal>0.0001; m++){
+      var interest = bal * i;
+      var principal = M - interest;
+      if(principal <= 0){ break; } // payment can't cover interest — avoid infinite loop
+      bal -= principal;
+      if(bal < 0) bal = 0;
+      pts.push({m:m, bal:bal});
+      if(m80===null && bal <= 0.80*V) m80 = m;
+      if(m78===null && bal <= 0.78*V){ m78 = m; break; }
+    }
+
+    var html = "";
+    html += '<p class="headline">You reach <b>80% LTV</b> (request removal) in</p>';
+    if(m80===0){
+      html += '<div class="big good">now</div>';
+      html += '<p class="note">Your balance is already at or under 80% of the original value. You can <b>submit a written request</b> to cancel PMI today (the lender may require a current appraisal).</p>';
+    } else if(m80!=null){
+      var cls80 = m80 <= 24 ? "good" : (m80 <= 60 ? "warn" : "");
+      html += '<div class="big '+cls80+'">'+ym(m80)+'</div>';
+      html += '<p class="note">At that point you can <b>request</b> cancellation in writing. It <b>auto-terminates</b> on its own at 78% LTV — about <b>'+ym(m78)+'</b> from now.</p>';
+    } else {
+      html += '<div class="big">—</div><p class="note">With these numbers the loan doesn\'t reach 80% within its term. Try adding extra principal.</p>';
+    }
+    html += '<div class="stats">';
+    html += '<div class="stat"><div class="k">Current LTV</div><div class="v">'+(curLtv*100).toFixed(1)+'%</div></div>';
+    html += '<div class="stat"><div class="k">Auto-cancel (78%)</div><div class="v" style="color:var(--good)">'+ym(m78)+'</div></div>';
+    html += '</div>';
+    if(extra>0){
+      html += '<p class="note">✓ Your extra <b>'+fmt$(extra)+'/mo</b> is pulling that date earlier. Set it to 0 to see the difference.</p>';
+    } else {
+      html += '<p class="note"><b>Tip:</b> even a small extra principal payment can move your PMI drop-off date up by months. Try entering one above.</p>';
+    }
+    out.innerHTML = html;
+    drawChart(pts, V, m78 || (pts.length-1));
+  }
+
+  // ---------- tiny SVG balance chart with 80% / 78% lines ----------
+  function drawChart(pts, V, mEnd){
+    var svg = $("p_chart");
+    if(!pts || pts.length < 2 || V<=0){ svg.innerHTML=""; return; }
+    var W=600, H=150, padL=6, padR=6, padT=10, padB=14;
+    var maxM = pts[pts.length-1].m || 1;
+    var maxBal = pts[0].bal || 1;
+    var x = function(m){ return padL + (m/maxM)*(W-padL-padR); };
+    var y = function(b){ return padT + (1 - b/maxBal)*(H-padT-padB); };
+
+    var d = "M "+x(pts[0].m).toFixed(1)+" "+y(pts[0].bal).toFixed(1);
+    for(var k=1;k<pts.length;k++){ d += " L "+x(pts[k].m).toFixed(1)+" "+y(pts[k].bal).toFixed(1); }
+    var area = d + " L "+x(pts[pts.length-1].m).toFixed(1)+" "+(H-padB)+" L "+x(pts[0].m).toFixed(1)+" "+(H-padB)+" Z";
+
+    var y80 = y(0.80*V), y78 = y(0.78*V);
+    function line(yy,color,label){
+      return '<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yy.toFixed(1)+'" stroke="'+color+'" stroke-width="1" stroke-dasharray="4 4" opacity="0.7"/>'
+           + '<text x="'+(padL+4)+'" y="'+(yy-4).toFixed(1)+'" fill="'+color+'" font-size="10" font-family="var(--mono)">'+label+'</text>';
+    }
+
+    svg.innerHTML =
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
+        + '<stop offset="0%" stop-color="#4ea3ff" stop-opacity="0.28"/>'
+        + '<stop offset="100%" stop-color="#4ea3ff" stop-opacity="0"/>'
+      + '</linearGradient></defs>'
+      + '<path d="'+area+'" fill="url(#g)"/>'
+      + '<path d="'+d+'" fill="none" stroke="#4ea3ff" stroke-width="2"/>'
+      + line(y80, "#ffb454", "80% · request")
+      + line(y78, "#3ddc97", "78% · auto-off");
+  }
+
+  // wire up
+  ["r_bal","r_rate1","r_yrs1","r_rate2","r_yrs2","r_cost"].forEach(function(id){ $(id).addEventListener("input", calcRefi); });
+  ["p_val","p_bal","p_rate","p_yrs","p_extra"].forEach(function(id){ $(id).addEventListener("input", calcPMI); });
+  $("yr").textContent = new Date().getFullYear();
+  calcRefi(); calcPMI();
+})();
+</script>
+</body>
+</html>
